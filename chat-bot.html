@@ -1,0 +1,169 @@
+<style>
+  #resta-chat-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  #resta-chat-button {
+    background-color: #0056b3;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 15px 25px;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    font-weight: bold;
+  }
+  #resta-chat-box {
+    display: none;
+    width: 350px;
+    height: 500px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    flex-direction: column;
+    overflow: hidden;
+    margin-bottom: 15px;
+  }
+  #resta-chat-header {
+    background-color: #0056b3;
+    color: white;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #resta-chat-close {
+    cursor: pointer;
+    font-size: 20px;
+  }
+  #resta-chat-messages {
+    flex-grow: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .message {
+    max-width: 80%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .user-msg {
+    background-color: #0056b3;
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+  }
+  .bot-msg {
+    background-color: #e9ecef;
+    color: #333;
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+  }
+  #resta-chat-input-area {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    background: white;
+  }
+  #resta-chat-input {
+    flex-grow: 1;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    padding: 10px 15px;
+    outline: none;
+  }
+  #resta-chat-send {
+    background: none;
+    border: none;
+    color: #0056b3;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0 15px;
+  }
+</style>
+
+<div id="resta-chat-widget">
+  <div id="resta-chat-box">
+    <div id="resta-chat-header">
+      <span>🚐 Tata - Resta Travel</span>
+      <span id="resta-chat-close" onclick="toggleChat()">×</span>
+    </div>
+    <div id="resta-chat-messages">
+      <div class="message bot-msg">Halo Kak! Saya Tata dari Resta Travel. Ada yang bisa Tata bantu untuk perjalanan Kakak hari ini? 😊</div>
+    </div>
+    <div id="resta-chat-input-area">
+      <input type="text" id="resta-chat-input" placeholder="Ketik pesan di sini..." onkeypress="handleEnter(event)">
+      <button id="resta-chat-send" onclick="sendMessage()">Kirim</button>
+    </div>
+  </div>
+  <button id="resta-chat-button" onclick="toggleChat()">💬 Chat dengan Tata</button>
+</div>
+
+<script>
+  function toggleChat() {
+    const chatBox = document.getElementById('resta-chat-box');
+    const chatBtn = document.getElementById('resta-chat-button');
+    if (chatBox.style.display === 'none' || chatBox.style.display === '') {
+      chatBox.style.display = 'flex';
+      chatBtn.style.display = 'none';
+    } else {
+      chatBox.style.display = 'none';
+      chatBtn.style.display = 'block';
+    }
+  }
+
+  function handleEnter(e) {
+    if (e.key === 'Enter') {
+      sendMessage();
+    }
+  }
+
+  function addMessage(text, sender) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'message ' + (sender === 'user' ? 'user-msg' : 'bot-msg');
+    msgDiv.innerHTML = text.replace(/\n/g, '<br>'); // Handle enter/new lines
+    document.getElementById('resta-chat-messages').appendChild(msgDiv);
+    document.getElementById('resta-chat-messages').scrollTop = document.getElementById('resta-chat-messages').scrollHeight;
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('resta-chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    addMessage(text, 'user');
+    input.value = '';
+
+    // URL Webhook Test Impresiv Kakak
+    const webhookUrl = 'https://cloud.impresivai.com/webhook/test/2c984534-aa40-4f98-8a40-3c081a637463';
+
+    try {
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        // Data yang dikirim ke Impresiv
+        body: JSON.stringify({ message: text }) 
+      });
+
+      // Menerima balasan dari Impresiv
+      const replyData = await response.text();
+      addMessage(replyData, 'bot');
+    } catch (error) {
+      addMessage("Maaf Kak, Tata sedang mengalami gangguan koneksi. Mohon coba lagi ya.", 'bot');
+      console.error('Error:', error);
+    }
+  }
+</script>
